@@ -1,0 +1,21 @@
+{% extends 'AppCitasMedicas/base.html' %}
+{% load static %}
+
+{% block title %}Confirmación de disponibilidad{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="alert alert-success" role="alert">
+    <h4 class="alert-heading">¡disponibilidad Registrada/Actualizada!</h4>
+    <p>La disponibilidad del médico ha sido guardada exitosamente.</p>
+    <hr>
+    <p class="mb-0">Gracias por mantener tu agenda actualizada.</p>
+  </div>
+
+  <div class="d-flex justify-content-center mt-4">
+    <a href="{% url 'inicio_medico' %}" class="btn btn-primary me-2">Volver al Panel Médico</a>
+    <a href="{% url 'ver_agenda_semanal' %}" class="btn btn-info">Ver Mi Agenda</a>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'AppCitasMedicas/base.html' %}
+{% load static %}
+
+{% block title %}Correo de Recuperación Enviado{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-lg text-center">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0"><i class="bi bi-envelope-check-fill me-2"></i>Instrucciones Enviadas</h3>
+        </div>
+        <div class="card-body p-4">
+          <p class="lead">Te hemos enviado un correo electrónico con instrucciones para establecer tu contraseña.</p>
+          <p>Por favor, revisa tu bandeja de entrada y la carpeta de spam.</p>
+          <hr>
+          <p class="mb-0">Si no recibes el correo en unos minutos, por favor, verifica que hayas introducido la
+            dirección correcta.</p>
+          <div class="mt-4">
+            <a href="{% url 'registration/login' %}" class="btn btn-primary btn-lg">Volver al Inicio de Sesión</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

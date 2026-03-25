@@ -1,0 +1,26 @@
+{% extends 'AppCitasMedicas/base.html' %}
+{% load static %}
+
+{% block title %}contraseña Restablecida{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-lg text-center">
+        <div class="card-header bg-success text-white">
+          <h3 class="mb-0"><i class="bi bi-check-circle-fill me-2"></i>contraseña Restablecida Correctamente</h3>
+        </div>
+        <div class="card-body p-4">
+          <p class="lead">¡Tu contraseña ha sido restablecida con éxito!</p>
+          <p>Ya puedes iniciar sesión con tu nueva contraseña.</p>
+          <hr>
+          <div class="mt-4">
+            <a href="{% url 'registration/login' %}" class="btn btn-primary btn-lg">Iniciar Sesión Ahora</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

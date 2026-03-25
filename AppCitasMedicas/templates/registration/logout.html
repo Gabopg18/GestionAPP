@@ -1,0 +1,15 @@
+logout.html
+
+{% extends 'AppCitasMedicas/base.html' %}
+
+{% block title %}Sesión Cerrada{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5 text-center">
+  <h2>Has cerrado sesión correctamente</h2>
+  <p>Gracias por usar el sistema de gestión de citas médicas.</p> <a href="{% url 'inicio_general' %}"
+    class="btn btn-primary mt-3">Volver al Inicio</a> <a href="{% url 'registration/login' %}"
+    class="btn btn-secondary mt-3">Iniciar
+    sesión</a>
+</div> {% endblock %}

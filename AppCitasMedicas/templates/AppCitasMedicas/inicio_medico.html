@@ -1,0 +1,55 @@
+{% extends 'AppCitasMedicas/base.html' %}
+{% load static %}
+
+{% block title %}Panel Médico{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h1 class="mb-4">Bienvenido, Dr. {{ user.username }}</h1> {# Asume que el nombre del médico es el username #}
+  <p class="lead">Desde aquí puedes gestionar tu agenda, disponibilidad y citas.</p>
+
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-4">
+    <div class="col">
+      <div class="card h-100 shadow-sm text-center">
+        <div class="card-body">
+          <i class="bi bi-calendar-event display-4 text-primary mb-3"></i>
+          <h5 class="card-title">Mi Agenda Diaria/Semanal</h5>
+          <p class="card-text">Consulta y gestiona tus citas programadas.</p>
+          <a href="{% url 'ver_agenda_semanal' %}" class="btn btn-primary">Ver Agenda</a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100 shadow-sm text-center">
+        <div class="card-body">
+          <i class="bi bi-person-check display-4 text-success mb-3"></i>
+          <h5 class="card-title">Registrar disponibilidad</h5>
+          <p class="card-text">Define tus horarios de atención para nuevas citas.</p>
+          <a href="{% url 'registrar_disponibilidad' %}" class="btn btn-success">Registrar</a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100 shadow-sm text-center">
+        <div class="card-body">
+          <i class="bi bi-pencil-square display-4 text-warning mb-3"></i>
+          <h5 class="card-title">Modificar disponibilidad</h5>
+          <p class="card-text">Actualiza tus horarios de atención existentes.</p>
+          <a href="{% url 'editar_disponibilidad' disponibilidad_id=1 %}" class="btn btn-warning">Modificar</a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100 shadow-sm text-center">
+        <div class="card-body">
+          <i class="bi bi-card-checklist display-4 text-info mb-3"></i>
+          <h5 class="card-title">Historial de Citas</h5>
+          <p class="card-text">Revisa las citas pasadas y su estado.</p>
+          <a href="{% url 'mis_citas_medico' %}" class="btn btn-info">Ver Historial</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

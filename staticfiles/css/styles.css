@@ -1,0 +1,566 @@
+/* ---------------------------------------
+   VARIABLES & BASE STYLES
+---------------------------------------- */
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+
+:root {
+  --color-primario: #007bff;
+  --color-alternativo: #004b99;
+  --color-blanco: #ffffff;
+  --color-gris: #f8f9fa;
+  --color-gris-oscuro: #343a40;
+  --color-verde: #28a745;
+  --color-rojo: #dc3545;
+  --color-amarillo: #ffc107;
+  --color-texto: #6a6f8c;
+  --color-fondo: #c8c8c8;
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  color: var(--color-texto);
+  background: var(--color-fondo);
+  font: 600 16px/18px 'Open Sans', sans-serif;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+.clearfix::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------------------------------------
+   LAYOUT & CONTAINERS
+---------------------------------------- */
+.container {
+  max-width: 1200px;
+  margin: 80px auto;
+  padding: 20px;
+}
+
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.form-container {
+  max-width: 800px;
+  margin: auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------------------------------------
+   NAVIGATION
+---------------------------------------- */
+.navbar {
+  background-color: var(--color-alternativo);
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
+}
+
+.navbar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: space-around;
+}
+
+.navbar li {
+  padding: 15px 20px;
+}
+
+.navbar a {
+  color: var(--color-blanco);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* ---------------------------------------
+   LOGIN PAGE
+---------------------------------------- */
+.login-wrap {
+  width: 100%;
+  max-width: 525px;
+  min-height: 670px;
+  margin: auto;
+  position: relative;
+  background: url('https://raw.githubusercontent.com/khadkamhn/day-01-login-form/master/img/bg.jpg') no-repeat center;
+  box-shadow: 0 12px 15px rgba(0, 0, 0, .24), 0 17px 50px rgba(0, 0, 0, .19);
+}
+
+.login-html {
+  width: 100%;
+  height: 100%;
+  padding: 90px 70px 50px;
+  background: rgba(40, 57, 101, .9);
+  position: absolute;
+}
+
+.login-form {
+  min-height: 345px;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  color: #fff;
+}
+
+.login-form .group {
+  margin-bottom: 15px;
+}
+
+.login-form .label,
+.login-form .input,
+.login-form .button {
+  width: 100%;
+  display: block;
+  color: #fff;
+}
+
+.login-form .input,
+.login-form .button {
+  border: none;
+  padding: 15px 20px;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, .1);
+}
+
+.login-form .label {
+  color: #aaa;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.login-form .button {
+  background: #1161ee;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.login-form .button:hover {
+  background: #0d50c5;
+}
+
+.login-form input[type="password"] {
+  -webkit-text-security: disc;
+}
+
+.login-form .check {
+  display: none;
+}
+
+.login-form label.check-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.login-form label .icon {
+  width: 15px;
+  height: 15px;
+  margin-right: 8px;
+  background: rgba(255, 255, 255, .1);
+  border-radius: 2px;
+  display: inline-block;
+  position: relative;
+}
+
+.login-form .check:checked+label .icon {
+  background: #1161ee;
+}
+
+.hr {
+  height: 2px;
+  margin: 40px 0 30px;
+  background: rgba(255, 255, 255, .2);
+}
+
+.foot-lnk {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.foot-lnk a {
+  color: #aaa;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.foot-lnk a:hover {
+  color: #fff;
+}
+
+/* ---------------------------------------
+   FORMS
+---------------------------------------- */
+form {
+  background-color: var(--color-blanco);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+
+/* ---------------------------------------
+   BUTTONS
+---------------------------------------- */
+.btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-right: 10px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.btn-primario {
+  background-color: var(--color-primario);
+  color: var(--color-blanco);
+  border: none;
+}
+
+.btn-secundario {
+  background-color: var(--color-blanco);
+  color: var(--color-primario);
+  border: 2px solid var(--color-primario);
+}
+
+.btn-confirmar {
+  background-color: var(--color-verde);
+  color: var(--color-blanco);
+}
+
+.btn-cancelar {
+  background-color: var(--color-rojo);
+  color: var(--color-blanco);
+}
+
+.btn-primary {
+  background: #3498db;
+  border-color: #3498db;
+  color: white;
+}
+
+.btn-danger {
+  background: #e74c3c;
+  border-color: #e74c3c;
+  color: white;
+}
+
+.btn-warning {
+  background: #f39c12;
+  border-color: #f39c12;
+  color: white;
+}
+
+.btn-success {
+  background: #2ecc71;
+  border-color: #2ecc71;
+  color: white;
+}
+
+.btn-secondary {
+  background: #95a5a6;
+  border-color: #95a5a6;
+  color: white;
+}
+
+.btn-action {
+  padding: 5px 10px;
+  margin: 0 3px;
+  border-radius: 5px;
+  transition: 0.3s;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------------------------------------
+   TABLES
+---------------------------------------- */
+.table {
+  width: 100%;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 20px;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background-color: var(--color-alternativo);
+  color: var(--color-blanco);
+}
+
+.table th {
+  background: #3498db;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px;
+  text-align: left;
+}
+
+.table td {
+  padding: 10px;
+  text-align: left;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+  background: rgba(52, 152, 219, 0.05);
+}
+
+.table tr:nth-child(even) {
+  background-color: var(--color-gris);
+}
+
+.table-citas th,
+.table-citas td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.table-citas tr:hover {
+  background: #f8f9fa;
+}
+
+/* ---------------------------------------
+   MESSAGES & ALERTS
+---------------------------------------- */
+.alert {
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.alert-success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.alert-error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.alert-warning {
+  background-color: var(--color-amarillo);
+  color: var(--color-gris-oscuro);
+}
+
+.no-citas-alert {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 15px;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+/* ---------------------------------------
+   HOMEPAGE & HERO SECTION
+---------------------------------------- */
+.hero-section {
+  padding: 5rem 0;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--color-primario) 50%, var(--color-alternativo) 50%);
+  padding: 40px;
+  color: var(--color-blanco);
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: #ffffff;
+  margin-bottom: 2rem;
+}
+
+.hero-image {
+  max-height: 400px;
+  width: 100%;
+  object-fit: contain;
+}
+
+.hero img {
+  max-width: 40%;
+  border-radius: 10px;
+}
+
+/* ---------------------------------------
+   CARDS & COMPONENTS
+---------------------------------------- */
+.card {
+  background-color: var(--color-blanco);
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+  padding: 20px;
+  text-align: center;
+}
+
+.card img {
+  max-width: 50px;
+}
+
+/* ---------------------------------------
+   ACTION LINKS & LISTS
+---------------------------------------- */
+.action-list {
+  list-style: none;
+  padding: 0;
+}
+
+.action-list li {
+  margin-bottom: 15px;
+}
+
+.action-list a {
+  display: block;
+  background: #f8f9fa;
+  padding: 12px 15px;
+  border-radius: 4px;
+  transition: 0.3s;
+}
+
+.action-list a:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+  text-decoration: none;
+}
+
+/* ---------------------------------------
+   BADGES
+---------------------------------------- */
+.badge-pendiente {
+  background: #f39c12 !important;
+}
+
+.badge-completada {
+  background: #2ecc71 !important;
+}
+
+.badge-cancelada {
+  background: #e74c3c !important;
+}
+
+/* ---------------------------------------
+   MODAL
+---------------------------------------- */
+.modal-cita {
+  border-radius: 10px;
+}
+
+.modal-header {
+  background: #3498db;
+  color: #fff;
+  border-radius: 10px 10px 0 0;
+}
+
+.modal-body p {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.modal-body strong {
+  color: #2c3e50;
+  min-width: 120px;
+  display: inline-block;
+}
+
+/* ---------------------------------------
+   RESPONSIVE DESIGN
+---------------------------------------- */
+@media (max-width: 768px) {
+  .navbar ul {
+    flex-direction: column;
+  }
+
+  .hero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero img {
+    max-width: 80%;
+  }
+
+  .login-html {
+    padding: 60px 30px 30px;
+  }
+
+  .login-wrap {
+    min-height: 550px;
+  }
+}
+
+@media (max-width: 600px) {
+  .login-html {
+    padding: 60px 30px 30px;
+  }
+
+  .login-wrap {
+    min-height: 550px;
+  }
+}

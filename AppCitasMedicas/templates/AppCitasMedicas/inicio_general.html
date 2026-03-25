@@ -1,0 +1,46 @@
+{% extends "AppCitasMedicas/base.html" %}
+{% load static %}
+
+{% block title %}Inicio | Gestion De Citas{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div>
+        <h1 class="hero-title">Citas Para Todos</h1>
+        <p class="hero-subtitle">Agenda, administra y consulta tus citas médicas de forma sencilla.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'buscar_citas' %}" class="btn btn-primario"><i class="bi bi-search"></i> Consultar mis
+                citas</a>
+            <a href="{% url 'agendar_cita' %}" class="btn btn-secundario"><i class="bi bi-calendar-plus"></i> Agendar
+                nueva cita</a>
+            <a href="{% url 'registration/login' %}" class="btn btn-confirmar"><i class="bi bi-person-lock"></i> Inicia
+                como
+                Médico</a>
+        </div>
+    </div>
+    <div>
+        <img src="{% static 'css/images/doctor.png' %}" alt="Doctor Ilustración" class="hero-image">
+
+    </div>
+</section>
+
+<section class="main-container">
+    <div class="card">
+        <img src="{% static 'css/images/calendar-days-regular.svg' %}" alt="Cita" width="60">
+        <h3>Agenda Fácil</h3>
+        <p>Reserva tu cita en pocos pasos, sin complicaciones.</p>
+    </div>
+
+    <div class="card">
+        <img src="{% static 'css/images/list-check-solid.svg' %}" alt="Gestión" width="60">
+        <h3>Gestiona tus Citas</h3>
+        <p>Consulta, reprograma o cancela cuando lo necesites.</p>
+    </div>
+
+    <div class="card">
+        <img src="{% static 'css/images/bell-solid.svg' %}" alt="Recordatorios" width="60">
+        <h3>Recordatorios</h3>
+        <p>Recibe avisos automáticos para no olvidar tus citas.</p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends 'AppCitasMedicas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Agendar una nueva cita</h2>
+
+    {% if paciente_form.non_field_errors or cita_form.non_field_errors %}
+    <div class="alert alert-danger">
+        <ul>
+            {% for error in paciente_form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+            {% for error in cita_form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+            {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <h3>Datos del Paciente</h3>
+        {% for field in paciente_form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+            <div class="error-message">{{ field.errors }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <h3>Datos de la Cita</h3>
+        {% for field in cita_form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+            <div class="error-message">{{ field.errors }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primario">Confirmar Cita</button>
+            <a href="{% url 'inicio_general' %}" class="btn btn-secundario">Cancelar Acción</a>
+        </div>
+    </form>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const medicoSelect = document.getElementById("id_medico");
+            const fechaHoraSelect = document.getElementById("id_fecha_hora_cita");
+
+            async function cargarHorarios(medicoId) {
+                fechaHoraSelect.innerHTML = '<option value="">Cargando horarios...</option>';
+                fechaHoraSelect.disabled = true;
+
+                try {
+                    const response = await fetch(`/ajax/disponibilidades/?medico_id=${medicoId}`);
+                    if (!response.ok) throw new Error("Error al obtener datos");
+                    const data = await response.json();
+
+                    fechaHoraSelect.innerHTML = '';
+                    if (data.length === 0) {
+                        const option = document.createElement("option");
+                        option.value = '';
+                        option.textContent = "No hay horarios disponibles";
+                        fechaHoraSelect.appendChild(option);
+                    } else {
+                        const defaultOption = document.createElement("option");
+                        defaultOption.value = '';
+                        defaultOption.textContent = "-- Seleccione fecha y hora --";
+                        fechaHoraSelect.appendChild(defaultOption);
+
+                        data.forEach(item => {
+                            const option = document.createElement("option");
+                            option.value = item.fecha_hora_iso;
+                            option.textContent = item.mostrar;
+                            fechaHoraSelect.appendChild(option);
+                        });
+                        fechaHoraSelect.disabled = false;
+                    }
+                } catch (err) {
+                    console.error("Error:", err);
+                    fechaHoraSelect.innerHTML = '<option value="">Error al cargar horarios</option>';
+                }
+            }
+
+            medicoSelect.addEventListener('change', function () {
+                const selectedMedico = this.value;
+                if (selectedMedico) {
+                    cargarHorarios(selectedMedico);
+                } else {
+                    fechaHoraSelect.innerHTML = '<option value="">-- Seleccione un médico primero --</option>';
+                    fechaHoraSelect.disabled = true;
+                }
+            });
+
+            // Inicializa si hay valor seleccionado
+            if (medicoSelect.value) {
+                cargarHorarios(medicoSelect.value);
+            }
+        });
+    </script>
+</div>
+
+<script>
+    // (Tu script JS permanece igual aquí)
+</script>
+
+<style>
+    .availability-message {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}

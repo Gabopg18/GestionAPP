@@ -1,0 +1,33 @@
+{% extends 'AppCitasMedicas/base.html' %}
+{% load static %}
+
+{% block title %}Eliminar disponibilidad{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-lg text-center">
+        <div class="card-header bg-danger text-white">
+          <h3 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Eliminación</h3>
+        </div>
+        <div class="card-body p-4">
+          <p class="lead">¿Estás seguro de que deseas eliminar la siguiente disponibilidad?</p>
+          <p><strong>Día:</strong> {{ disponibilidad.dia_semana }}</p>
+          <p><strong>Horario:</strong> {{ disponibilidad.hora_inicio }} - {{ disponibilidad.hora_fin }}</p>
+          <hr>
+          <p class="text-danger">Esta acción no se puede deshacer.</p>
+          <form method="post" action="{% url 'eliminar_disponibilidad' disponibilidad.id %}"> {# Asegúrate que la URL
+            use 'id' si tu modelo no tiene 'id_disponibilidad' #}
+            {% csrf_token %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+              <button type="submit" class="btn btn-danger btn-lg me-md-2">Sí, Eliminar</button>
+              <a href="{% url 'editar_disponibilidad' %}" class="btn btn-secondary btn-lg">No, Volver</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

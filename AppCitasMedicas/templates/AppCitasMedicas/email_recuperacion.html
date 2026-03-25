@@ -1,0 +1,9 @@
+{% autoescape off %}
+
+<p>Hola,</p>
+<p>Recibimos una solicitud para restablecer tu contraseña.</p>
+<p>Para establecer una nueva contraseña, haz clic en el siguiente enlace:</p>
+<p><a href="{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}">Restablecer
+    contraseña</a></p>
+<p>Si tú no solicitaste este cambio, puedes ignorar este mensaje.</p>
+<p>Gracias,<br>El equipo de Citas Para Todos</p> {% endautoescape %}

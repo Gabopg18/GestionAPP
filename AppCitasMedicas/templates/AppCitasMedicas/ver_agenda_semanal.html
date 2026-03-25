@@ -1,0 +1,101 @@
+{% extends 'AppCitasMedicas/base.html' %}
+{% load static %}
+
+{% block title %}Mi Agenda Semanal{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-calendar-week me-2"></i>Mi Agenda Semanal</h2>
+    <div>
+      <span class="badge bg-primary me-2">
+        Semana del {{ inicio_semana|date:"d/m/Y" }} al {{ fin_semana|date:"d/m/Y" }}
+      </span>
+      <a href="{% url 'registrar_disponibilidad' %}" class="btn btn-success me-2">
+        <i class="bi bi-plus-circle"></i> Agregar Horario
+      </a>
+      <a href="{% url 'inicio_medico' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="table-primary">
+        <tr>
+          <th>Tipo</th>
+          <th>Día</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Detalles</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in agenda_semanal %}
+        <tr class="{% if item.tipo == 'disponibilidad' %}table-light{% endif %}">
+          <td>
+            {% if item.tipo == 'disponibilidad' %}
+            <span class="badge bg-info">Disponible</span>
+            {% else %}
+            <span class="badge bg-primary">Cita</span>
+            {% endif %}
+          </td>
+          <td>{{ item.fecha|date:"l" }}</td>
+          <td>{{ item.fecha|date:"d/m/Y" }}</td>
+          <td>
+            {{ item.hora|time:"H:i" }}
+            {% if item.tipo == 'disponibilidad' %}
+            - {{ item.hora_fin|time:"H:i" }}
+            {% endif %}
+          </td>
+          <td>
+            {% if item.tipo == 'cita' %}
+            {{ item.paciente.nombre }}
+            <small class="text-muted d-block">{{ item.paciente.cedula }}</small>
+            {% else %}
+            <span class="text-muted">Horario disponible</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if item.tipo == 'cita' %}
+            <span class="badge 
+                {% if item.estado_raw == 'agendada' %}bg-primary
+                {% elif item.estado_raw == 'completada' %}bg-success
+                {% elif item.estado_raw == 'cancelada' %}bg-danger
+                {% else %}bg-warning{% endif %}">
+              {{ item.estado }}
+            </span>
+            {% else %}
+            <span class="badge bg-success">Disponible</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if item.tipo == 'cita' %}
+            </a>
+            {% if item.estado_raw == 'agendada' %}
+            <i class="bi bi-x-circle"></i>
+            </a>
+            {% endif %}
+            {% else %}
+            <a href="#" class="btn btn-sm btn-warning me-2">
+              <i class="bi bi-pencil"> </i>
+            </a>
+            <a href="#" class="btn btn-sm btn-danger">
+              <i class="bi bi-trash"></i>
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center">No hay eventos programados para esta semana.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'AppCitasMedicas/base.html' %}
+{% load static %}
+
+{% block title %}Registrar disponibilidad{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-lg">
+    <div class="card-header bg-success text-white text-center">
+      <h3 class="mb-0"><i class="bi bi-calendar-plus-fill me-2"></i>Registrar Nueva disponibilidad</h3>
+    </div>
+    <div class="card-body p-4">
+      {% if messages %}
+      <ul class="list-unstyled mb-4">
+        {% for message in messages %}
+        <li class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
+          {{ message }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <p class="lead">Define los días y horarios en los que estarás disponible para atender citas.</p>
+
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }} {# Renderiza el formulario con etiquetas <p> #}
+        <div class="d-grid mt-4">
+          <button type="submit" class="btn btn-success btn-lg">Guardar disponibilidad</button>
+        </div>
+        <div class="text-center mt-3">
+          <a href="{% url 'inicio_medico' %}" class="btn btn-secondary">Volver al Panel Médico</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

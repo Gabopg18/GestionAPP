@@ -1,0 +1,23 @@
+{% extends 'AppCitasMedicas/base.html' %}
+{% load static %}
+
+{% block title %}Cancelar Cita{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Cancelar Cita</h2>
+        </div>
+        <div class="card-body">
+            <p>¿Estás seguro que deseas cancelar esta cita?</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger me-2">Sí, cancelar</button>
+                <a href="{% url 'ver_citas' %}" class="btn btn-secondary">Volver</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
