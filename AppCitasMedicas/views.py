@@ -444,3 +444,25 @@ def obtener_disponibilidades(request):
 class LoginMedicoView(LoginView):
     template_name = 'AppCitasMedicas/login.html'
     authentication_form = LoginMedicoForm
+
+def obtener_medicos(request):
+    """
+    API endpoint para obtener médicos, con opción de filtrado por especialidad.
+    """
+    especialidad = request.GET.get('especialidad')
+    
+    if especialidad:
+        # Filtrado insensible a mayúsculas y minúsculas
+        medicos = Medico.objects.filter(especialidad__iexact=especialidad)
+    else:
+        medicos = Medico.objects.all()
+        
+    resultados = []
+    for m in medicos:
+        resultados.append({
+            'id': m.user.id,
+            'nombre': m.user.get_full_name() or m.user.username,
+            'especialidad': m.especialidad
+        })
+        
+    return JsonResponse(resultados, safe=False)

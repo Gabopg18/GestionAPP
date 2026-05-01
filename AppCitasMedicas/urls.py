@@ -26,6 +26,7 @@ urlpatterns = [
     path('medico/disponibilidad/registrar/', views.registrar_disponibilidad, name='registrar_disponibilidad'),
     path('ajax/disponibilidades/', views.obtener_disponibilidades, name='ajax_disponibilidades'),
     path('mis-citas-medico/', views.mis_citas_medico, name='mis_citas_medico'),
+    path('medicos/', views.obtener_medicos, name='obtener_medicos'),
     
 
     
