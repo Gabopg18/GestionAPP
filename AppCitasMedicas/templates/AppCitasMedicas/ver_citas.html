@@ -54,6 +54,9 @@
                   data-bs-target="#detalleModal{{ cita.id_cita }}">
                   <i class="bi bi-eye"></i> Ver
                 </button>
+                <a href="{% url 'generar_pdf_cita' cita.id_cita %}" class="btn btn-action btn-secondary" title="Descargar PDF">
+                  <i class="bi bi-file-earmark-pdf"></i> PDF
+                </a>
                 {% if cita.estado == 'Agendada' %}
                 <a href="{% url 'cancelar_cita' cita.id_cita %}" class="btn btn-action btn-danger">
                   <i class="bi bi-x-circle"></i> Cancelar
@@ -70,9 +73,7 @@
       </table>
     </div>
     {% else %}
-    <div class="no-citas-alert text-center py-3">
-      <i class="bi bi-exclamation-triangle-fill"></i> No se encontraron citas para esta cédula.
-    </div>
+    {% include 'AppCitasMedicas/no_citas.html' %}
     {% endif %}
   </div>
 </div>

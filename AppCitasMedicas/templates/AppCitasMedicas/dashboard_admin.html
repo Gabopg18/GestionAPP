@@ -1,0 +1,155 @@
+{% extends 'AppCitasMedicas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard de Analítica Admin</h2>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Métricas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Total Citas</h5>
+                    <p class="card-text display-4">{{ total_citas }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Pacientes</h5>
+                    <p class="card-text display-4">{{ total_pacientes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Médicos Activos</h5>
+                    <p class="card-text display-4">{{ stats_especialidad|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Especialidades</h5>
+                    <p class="card-text display-4">{{ stats_especialidad|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico de Estados -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Distribución por Estado</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="estadoChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Especialidades -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Citas por Especialidad</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="especialidadChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Citas Recientes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Últimas Citas Registradas</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Paciente</th>
+                                <th>Médico</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cita in citas_recientes %}
+                            <tr>
+                                <td>{{ cita.paciente.nombre }}</td>
+                                <td>{{ cita.medico.user.get_full_name }}</td>
+                                <td>{{ cita.fecha_hora_cita|date:"d/m/Y H:i" }}</td>
+                                <td><span class="badge bg-secondary">{{ cita.estado }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bloques de datos seguros para JS -->
+{{ stats_estado|json_script:"estado-data-json" }}
+{{ stats_especialidad|json_script:"especialidad-data-json" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Recuperar datos de forma segura
+    const statsEstado = JSON.parse(document.getElementById('estado-data-json').textContent);
+    const statsEspecialidad = JSON.parse(document.getElementById('especialidad-data-json').textContent);
+
+    // Gráfico de Estados
+    const estadoLabels = statsEstado.map(item => item.estado);
+    const estadoValues = statsEstado.map(item => item.total);
+
+    const estadoCtx = document.getElementById('estadoChart').getContext('2d');
+    new Chart(estadoCtx, {
+        type: 'doughnut',
+        data: {
+            labels: estadoLabels,
+            datasets: [{
+                data: estadoValues,
+                backgroundColor: ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#6c757d']
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // Gráfico de Especialidades
+    const espLabels = statsEspecialidad.map(item => item.medico__especialidad);
+    const espValues = statsEspecialidad.map(item => item.total);
+
+    const especialidadCtx = document.getElementById('especialidadChart').getContext('2d');
+    new Chart(especialidadCtx, {
+        type: 'bar',
+        data: {
+            labels: espLabels,
+            datasets: [{
+                label: 'Total Citas',
+                data: espValues,
+                backgroundColor: '#0d6efd'
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,11 +1,20 @@
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
-from . import views 
+from rest_framework.routers import DefaultRouter
+from . import views, api_views
+
+router = DefaultRouter()
+router.register(r'disponibilidades', api_views.DisponibilidadViewSet)
+router.register(r'citas', api_views.CitaMedicaViewSet)
 
  
 
 urlpatterns = [
-    # Vistas Generales
+    # API REST (Sprint 2) - Accesible en /api/
+    path('api/', include(router.urls)),
+    path('admin/dashboard/', views.dashboard_admin, name='dashboard_admin'),
+
+    # Vistas Generales - Ahora esta será la raíz (/)
     path('', views.inicio_general, name='inicio_general'),
     
     # Autenticación
@@ -13,16 +22,17 @@ urlpatterns = [
     path('logout/', views.cerrar_sesion, name='registration/logout'), # Usar la vista personalizada
     
     # Pacientes
-    path('buscar-citas/', views.buscar_citas, name='buscar_citas'),
-    path('ver-citas/<str:cedula>/', views.ver_citas, name='no_citas'),
-    path('citas/agendar/', views.agendar_cita, name='agendar_cita'),
+    path('buscar-citas/', views.BuscarCitasView.as_view(), name='buscar_citas'),
+    path('ver-citas/<str:cedula>/', views.VerCitasView.as_view(), name='ver_citas'),
+    path('citas/agendar/', views.AgendarCitaView.as_view(), name='agendar_cita'),
+    path('citas/comprobante/<uuid:cita_id>/', views.generar_pdf_cita, name='generar_pdf_cita'),
     path('citas/cancelar/<uuid:cita_id>/', views.cancelar_cita, name='cancelar_cita'),
     path('citas/reprogramar/<uuid:cita_id>/', views.reprogramar_cita, name='reprogramar_cita'),
-    path('ver-citas/<str:cedula>/', views.ver_citas, name='ver_citas'),
     
     # Médicos
     path('medico/', views.inicio_medico, name='inicio_medico'),
     path('medico/agenda/', views.ver_agenda_medica, name='ver_agenda_semanal'),
+    path('medico/calendario/', views.calendario_interactivo, name='calendario_interactivo'),
     path('medico/disponibilidad/registrar/', views.registrar_disponibilidad, name='registrar_disponibilidad'),
     path('ajax/disponibilidades/', views.obtener_disponibilidades, name='ajax_disponibilidades'),
     path('mis-citas-medico/', views.mis_citas_medico, name='mis_citas_medico'),

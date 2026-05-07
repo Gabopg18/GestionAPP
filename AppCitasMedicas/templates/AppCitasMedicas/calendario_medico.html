@@ -1,0 +1,107 @@
+{% extends "AppCitasMedicas/inicio_medico.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar de Acciones -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-lg mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0"><i class="fas fa-tools me-2"></i>Gestión Rápida</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Usa el calendario para visualizar tus horarios. Haz clic en un bloque para editarlo.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'registrar_disponibilidad' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Nueva Disponibilidad
+                        </a>
+                        <a href="{% url 'ver_agenda_semanal' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-2"></i>Vista de Lista
+                        </a>
+                    </div>
+                    <hr>
+                    <div class="mt-3">
+                        <h6>Leyenda</h6>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success me-2" style="width: 20px; height: 20px;">&nbsp;</span>
+                            <span>Disponible</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-primary me-2" style="width: 20px; height: 20px;">&nbsp;</span>
+                            <span>Cita Agendada</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendario Principal -->
+        <div class="col-md-9">
+            <div class="card shadow-sm border-0 rounded-lg">
+                <div class="card-body p-4">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FullCalendar Dependencies -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js'></script>
+
+<style>
+    :root {
+        --fc-border-color: #e9ecef;
+        --fc-daygrid-event-dot-width: 8px;
+    }
+    #calendar {
+        max-height: 800px;
+        background: white;
+    }
+    .fc-toolbar-title {
+        font-size: 1.5rem !important;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    .fc-button-primary {
+        background-color: #4e73df !important;
+        border-color: #4e73df !important;
+    }
+    .fc-event {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .fc-event:hover {
+        transform: scale(1.02);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            locale: 'es',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            slotMinTime: '06:00:00',
+            slotMaxTime: '21:00:00',
+            allDaySlot: false,
+            events: '{% url "ajax_disponibilidades" %}?medico_id={{ medico.user.id }}',
+            eventClick: function(info) {
+                // Al hacer clic, redirigir a la edición
+                window.location.href = `/medico/disponibilidad/${info.event.id}/editar/`;
+            },
+            eventDidMount: function(info) {
+                // Agregar tooltip o personalización adicional
+            }
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

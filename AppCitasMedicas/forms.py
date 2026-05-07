@@ -71,13 +71,9 @@ class CitaMedicaForm(forms.ModelForm):
                 hora_inicio__lt=ahora.time()
             ).order_by('fecha', 'hora_inicio')
 
-            opciones = []
+            opciones = [('', '-- Seleccione horario --')]
             for d in qs:
-                fecha_hora = timezone.datetime.combine(d.fecha, d.hora_inicio)
-                fecha_hora_aware = timezone.make_aware(fecha_hora)
-                iso = fecha_hora_aware.isoformat()
-                mostrar = f"{d.fecha.strftime('%d/%m/%Y')} - {d.hora_inicio.strftime('%H:%M')}"
-                opciones.append((iso, mostrar))
+                opciones.append((d.id, f"{d.fecha.strftime('%d/%m/%Y')} - {d.hora_inicio.strftime('%H:%M')}"))
 
             self.fields['fecha_hora_cita'].choices = opciones
         else:
@@ -180,7 +176,7 @@ class ReprogramarCitaForm(forms.ModelForm):
             cita_existente = CitaMedica.objects.filter(
                 medico=medico,
                 fecha_hora_cita=fecha_hora,
-                estado__in=['Agendada', 'Reprogramada']
+                estado__in=['Pendiente', 'Confirmada']
             ).exclude(id_cita=cita_id).exists()
 
             if cita_existente:

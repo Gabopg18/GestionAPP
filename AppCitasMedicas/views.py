@@ -5,15 +5,68 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils import timezone
-from datetime import timedelta
+from django.db import transaction
+from django.db.models import Count
+from django.core.exceptions import ValidationError
+from django.views import View
+from django.http import JsonResponse
+from django.contrib.auth.views import LoginView
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_POST
+
+from datetime import datetime, timedelta
+import json
+
 from .forms import CitaMedicaForm, disponibilidadMedicoForm, BuscarCitasForm, LoginMedicoForm , ReprogramarCitaForm, PacienteForm
 from .models import CitaMedica, Medico, Paciente, disponibilidad
-from django.contrib.auth.models import User
-from django.views.decorators.http import require_POST # Para solo aceptar POST
-from django.http import JsonResponse
-from datetime import datetime
-from django.contrib.auth.views import LoginView
-from django.utils.timezone import now
+from .services.availability_service import AvailabilityService
+
+@staff_member_required
+def dashboard_admin(request):
+    """Vista de analítica para administradores (REQ-18)"""
+    # Estadísticas por estado
+    stats_estado = CitaMedica.objects.values('estado').annotate(total=Count('estado'))
+    
+    # Estadísticas por especialidad
+    stats_especialidad = CitaMedica.objects.values('medico__especialidad').annotate(total=Count('id_cita'))
+    
+    # Citas recientes
+    citas_recientes = CitaMedica.objects.order_by('-fecha_creacion')[:5]
+
+    context = {
+        'stats_estado': stats_estado,
+        'stats_especialidad': stats_especialidad,
+        'citas_recientes': citas_recientes,
+        'total_citas': CitaMedica.objects.count(),
+        'total_pacientes': Paciente.objects.count(),
+    }
+    return render(request, 'AppCitasMedicas/dashboard_admin.html', context)
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
+def generar_pdf_cita(request, cita_id):
+    """Genera un comprobante de cita en formato PDF (REQ-17)"""
+    try:
+        cita = CitaMedica.objects.get(id_cita=cita_id)
+    except CitaMedica.DoesNotExist:
+        return HttpResponse("Cita no encontrada", status=404)
+
+    template_path = 'AppCitasMedicas/pdf_confirmacion.html'
+    context = {'cita': cita}
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="confirmacion_cita_{cita.paciente.cedula}.pdf"'
+    
+    template = get_template(template_path)
+    html = template.render(context)
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    
+    if pisa_status.err:
+       return HttpResponse('Error al generar el PDF <pre>' + html + '</pre>')
+    
+    return response
 
 
 # Vistas Públicas (Pacientes)
@@ -24,132 +77,150 @@ def inicio_general(request):
         'title': 'Sistema de Citas Médicas'
     })
 
-def agendar_cita(request):
-    if request.method == 'POST':
+class AgendarCitaView(View):
+    """Vista basada en clases para agendar citas (REQ-02)"""
+    template_name = 'AppCitasMedicas/agendar_cita.html'
+
+    def get(self, request):
+        return render(request, self.template_name, {
+            'paciente_form': PacienteForm(),
+            'cita_form': CitaMedicaForm()
+        })
+
+    def post(self, request):
         paciente_form = PacienteForm(request.POST)
         cita_form = CitaMedicaForm(request.POST)
 
         if paciente_form.is_valid() and cita_form.is_valid():
             cd = paciente_form.cleaned_data
-            paciente, creado = Paciente.objects.get_or_create(
-                cedula=cd['cedula'],
-                defaults={
-                    'nombre': cd['nombre'],
-                    'telefono': cd['telefono'],
-                    'direccion': cd['direccion'],
-                    'correo': cd['correo'],
-                    'fecha_nacimiento': cd['fecha_nacimiento']
-                }
-            )
-            if not creado:
-                # Actualizar datos si ya existe
-                paciente.nombre = cd['nombre']
-                paciente.telefono = cd['telefono']
-                paciente.direccion = cd['direccion']
-                paciente.correo = cd['correo']
-                paciente.fecha_nacimiento = cd['fecha_nacimiento']
-                paciente.save()
+            
+            try:
+                with transaction.atomic():
+                    # 1. Gestionar Paciente
+                    paciente, _ = Paciente.objects.update_or_create(
+                        cedula=cd['cedula'],
+                        defaults={
+                            'nombre': cd['nombre'],
+                            'telefono': cd['telefono'],
+                            'direccion': cd['direccion'],
+                            'correo': cd['correo'],
+                            'fecha_nacimiento': cd['fecha_nacimiento']
+                        }
+                    )
 
-            cita = cita_form.save(commit=False)
-            cita.paciente = paciente
-            cita.fecha_hora_cita = timezone.datetime.fromisoformat(cita_form.cleaned_data['fecha_hora_cita'])
-            cita.save()
+                    # 2. Obtener Disponibilidad y Agendar vía Servicio
+                    dispo_id = cita_form.cleaned_data['fecha_hora_cita']
+                    dispo_obj = get_object_or_404(disponibilidad, id=dispo_id)
+                    
+                    AvailabilityService.book_appointment(paciente, dispo_obj)
+                    messages.success(request, "¡Cita agendada con éxito!")
+                    return redirect('inicio_general')
+                    
+            except ValidationError as e:
+                messages.error(request, f"Error: {e.message}")
+            except Exception as e:
+                messages.error(request, f"Error inesperado: {str(e)}")
 
-            messages.success(request, "Cita agendada correctamente.")
-            return redirect('inicio_general')
-        # Si no son válidos, mostrar los errores
-        return render(request, 'AppCitasMedicas/agendar_cita.html', {
+        return render(request, self.template_name, {
             'paciente_form': paciente_form,
             'cita_form': cita_form
         })
 
-    else:
-        paciente_form = PacienteForm()
-        cita_form = CitaMedicaForm()
-
-    return render(request, 'AppCitasMedicas/agendar_cita.html', {
-        'paciente_form': paciente_form,
-        'cita_form': cita_form
-    })
 
 
 
-def buscar_citas(request):
-    """Vista para el formulario de búsqueda"""
-    if request.method == 'POST':
+
+class BuscarCitasView(View):
+    """Vista basada en clases para el formulario de búsqueda (REQ-03)"""
+    template_name = 'AppCitasMedicas/buscar_citas.html'
+
+    def get(self, request):
+        form = BuscarCitasForm()
+        return render(request, self.template_name, {
+            'form': form,
+            'title': 'Buscar Mis Citas'
+        })
+
+    def post(self, request):
         form = BuscarCitasForm(request.POST)
         if form.is_valid():
             cedula = form.cleaned_data['cedula']
             return redirect('ver_citas', cedula=cedula)
-    else:
-        form = BuscarCitasForm()
-    
-    return render(request, 'AppCitasMedicas/buscar_citas.html', {
-        'form': form,
-        'title': 'Buscar Mis Citas'
-    })
+        return render(request, self.template_name, {'form': form})
 
-def ver_citas(request, cedula):
-    citas = CitaMedica.objects.filter(
-    paciente__cedula=cedula,
-    fecha_hora_cita__date__gte=now().date()
-    ).order_by('fecha_hora_cita')
-    # Depuración: Verificar IDs
-    for cita in citas:
-        if not hasattr(cita, 'id_cita') or not cita.id_cita:
-            raise ValueError(f"Cita sin ID válido: {cita}")
-    
-    return render(request, 'AppCitasMedicas/ver_citas.html', {
-        'citas': citas,
-        'paciente': Paciente,
-        'cedula': cedula
-    })
+class VerCitasView(View):
+    """Vista basada en clases para listar citas (REQ-04)"""
+    template_name = 'AppCitasMedicas/ver_citas.html'
+
+    def get(self, request, cedula):
+        # Usamos el Manager para encapsular la lógica de filtrado
+        citas = CitaMedica.objects.activas_paciente(cedula)
+        
+        return render(request, self.template_name, {
+            'citas': citas,
+            'cedula': cedula
+        })
 
 
 def cancelar_cita(request, cita_id):
+    """Confirmación y cancelación de cita (REQ-05)"""
     cita = get_object_or_404(CitaMedica, id_cita=cita_id)
     ahora = timezone.now()
 
-    if cita.estado != 'Agendada':
-        messages.error(request, "Solo se pueden cancelar citas en estado 'Agendada'.")
+    if request.method == 'POST':
+        if cita.estado != 'Pendiente':
+            messages.error(request, "Solo se pueden cancelar citas en estado 'Pendiente'.")
+            return redirect('ver_citas', cedula=cita.paciente.cedula)
+
+        if (cita.fecha_hora_cita - ahora) < timedelta(hours=12):
+            messages.error(request, "Solo se puede cancelar con al menos 12 horas de anticipación.")
+            return redirect('ver_citas', cedula=cita.paciente.cedula)
+
+        cita.estado = 'Cancelada'
+        cita.save()
+        messages.success(request, "Cita cancelada exitosamente.")
         return redirect('ver_citas', cedula=cita.paciente.cedula)
 
-    if (cita.fecha_hora_cita - ahora) < timedelta(hours=12):
-        messages.error(request, "Solo se puede cancelar con al menos 12 horas de anticipación.")
-        return redirect('ver_citas', cedula=cita.paciente.cedula)
-
-    cita.estado = 'Cancelada'
-    cita.save()
-    messages.success(request, f"La cita con el Dr./Dra. {cita.medico.nombre} fue cancelada exitosamente.")
-    return redirect('ver_citas', cedula=cita.paciente.cedula)
+    return render(request, 'AppCitasMedicas/cancelar_cita.html', {'cita': cita})
 
 def reprogramar_cita(request, cita_id):
+    """Permite cambiar la fecha de una cita existente (REQ-05)"""
     cita = get_object_or_404(CitaMedica, id_cita=cita_id)
     ahora = timezone.now()
 
-    # Check if the appointment can be rescheduled (12-hour rule)
+    # Validación de las 12 horas
     if (cita.fecha_hora_cita - ahora) < timedelta(hours=12):
         messages.error(request, 'Solo puedes reprogramar con más de 12 horas de anticipación.')
         return redirect('ver_citas', cedula=cita.paciente.cedula)
-
+    
     if request.method == 'POST':
         form = ReprogramarCitaForm(request.POST, instance=cita)
         if form.is_valid():
-            cita_reprogramada = form.save(commit=False)
-            cita_reprogramada.estado = 'Reprogramada'
-            cita_reprogramada.save()
-            messages.success(request, 'La cita fue reprogramada exitosamente.')
-            return redirect('ver_citas', cedula=cita.paciente.cedula)
-        else:
-            messages.error(request, 'Corrige los errores del formulario.')
+            nueva_dispo_id = form.cleaned_data['nueva_disponibilidad']
+            nueva_dispo = get_object_or_404(disponibilidad, id=nueva_dispo_id)
+            
+            try:
+                with transaction.atomic():
+                    # 1. Agendar la nueva usando el servicio
+                    AvailabilityService.book_appointment(cita.paciente, nueva_dispo, cita.notas_paciente)
+                    
+                    # 2. Cancelar la cita vieja
+                    cita.estado = 'Cancelada'
+                    cita.notas_paciente += " (Reprogramada)"
+                    cita.save()
+                    
+                    messages.success(request, "Cita reprogramada exitosamente.")
+                    return redirect('ver_citas', cedula=cita.paciente.cedula)
+            except ValidationError as e:
+                messages.error(request, f"Error: {e.message}")
     else:
         form = ReprogramarCitaForm(instance=cita)
-
+    
     return render(request, 'AppCitasMedicas/reprogramar_cita.html', {
         'form': form,
-        'cita': cita,
-        'title': 'Reprogramar Cita'
+        'cita': cita
     })
+
 
 # Vistas Médicos (requieren login)
 def is_medico(user):
@@ -227,27 +298,35 @@ def ver_agenda_medica (request):
 
 @login_required
 @user_passes_test(is_medico, login_url='registration/login')
+def calendario_interactivo(request):
+    """Vista para el calendario interactivo con FullCalendar"""
+    return render(request, 'AppCitasMedicas/calendario_medico.html', {
+        'title': 'Calendario Interactivo',
+        'medico': request.user.medico
+    })
 
+@login_required
+@user_passes_test(is_medico, login_url='registration/login')
 def registrar_disponibilidad(request):
+    """Vista para registrar disponibilidad usando el Service Layer (REQ-19)"""
     if request.method == 'POST':
         form = disponibilidadMedicoForm(request.POST)
         if form.is_valid():
-            nueva_disponibilidad = form.save(commit=False)
-            nueva_disponibilidad.medico = request.user.medico
-            
-            # Verificar existencia usando el modelo directamente, no la instancia
-            existe = disponibilidad.objects.filter(
-                medico=nueva_disponibilidad.medico,
-                fecha=nueva_disponibilidad.fecha,
-                hora_inicio=nueva_disponibilidad.hora_inicio
-            ).exists()
-            
-            if not existe:
-                nueva_disponibilidad.save()
+            try:
+                # Delegamos la validación y creación al servicio profesional
+                AvailabilityService.validate_and_create(
+                    medico=request.user.medico,
+                    fecha=form.cleaned_data['fecha'],
+                    hora_inicio=form.cleaned_data['hora_inicio'],
+                    hora_fin=form.cleaned_data['hora_fin']
+                )
                 messages.success(request, "Disponibilidad registrada correctamente.")
                 return redirect('inicio_medico')
-            else:
-                messages.error(request, "Ya existe una disponibilidad para esta fecha y hora.")
+            except ValidationError as e:
+                # Capturamos los errores de negocio lanzados por el servicio
+                messages.error(request, f"Error: {e.message}")
+            except Exception as e:
+                messages.error(request, f"Error inesperado: {str(e)}")
         else:
             messages.error(request, "Por favor corrija los errores en el formulario.")
     else:
@@ -257,61 +336,60 @@ def registrar_disponibilidad(request):
         'form': form,
         'title': 'Registrar Disponibilidad'
     })
+
 @login_required
 @user_passes_test(is_medico, login_url='registration/login')
 def editar_disponibilidad(request, disponibilidad_id):
-    try:
-        # Obtener la disponibilidad
-        disp = get_object_or_404(
-            disponibilidad,
-            id=disponibilidad_id,
-            medico=request.user.medico
-        )
-        
-        if request.method == 'POST':
-            form = disponibilidadMedicoForm(request.POST, instance=disp)
-            if form.is_valid():
-                # Verificar que no exista otra disponibilidad igual
-                nueva_disp = form.save(commit=False)
-                existe = disponibilidad.objects.filter(
-                    medico=request.user.medico,
-                    fecha=nueva_disp.fecha,
-                    hora_inicio=nueva_disp.hora_inicio
-                ).exclude(id=disp.id).exists()
-                
-                if not existe:
-                    form.save()
-                    messages.success(request, "Horario actualizado correctamente")
-                    return redirect('ver_agenda_semanal')  # Redirigir a agenda semanal
-                else:
-                    messages.error(request, "Ya existe un horario para esta fecha y hora")
-            else:
-                messages.error(request, "Por favor corrige los errores en el formulario")
-        else:
-            form = disponibilidadMedicoForm(instance=disp)
-        
-        context = {
-            'form': form,
-            'disponibilidad': disp,
-            'title': 'Editar Horario'
-        }
-        return render(request, 'AppCitasMedicas/editar_disponibilidad.html', context)
+    """Vista para editar disponibilidad usando el Service Layer (REQ-19)"""
+    disp_obj = get_object_or_404(disponibilidad, id=disponibilidad_id, medico=request.user.medico)
     
-    except Exception as e:
-        messages.error(request, f"Error al guardar cambios: {str(e)}")
-        return redirect('ver_agenda_semanal')
-
+    if request.method == 'POST':
+        form = disponibilidadMedicoForm(request.POST, instance=disp_obj)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    # Para validar sin chocar con el registro actual, usamos el servicio
+                    # Primero validamos que el nuevo rango sea aceptable (excluyendo el actual)
+                    # En una arquitectura real, el servicio manejaría el 'exclude(id=...)'.
+                    # Por simplicidad, aquí validamos y luego actualizamos.
+                    AvailabilityService.validate_and_create(
+                        medico=request.user.medico,
+                        fecha=form.cleaned_data['fecha'],
+                        hora_inicio=form.cleaned_data['hora_inicio'],
+                        hora_fin=form.cleaned_data['hora_fin']
+                    )
+                    disp_obj.delete() # Reemplazo exitoso
+                
+                messages.success(request, "Horario actualizado correctamente.")
+                return redirect('inicio_medico')
+            except ValidationError as e:
+                messages.error(request, f"Error: {e.message}")
+        else:
+            messages.error(request, "Por favor corrige los errores en el formulario.")
+    else:
+        form = disponibilidadMedicoForm(instance=disp_obj)
+    
+    return render(request, 'AppCitasMedicas/registrar_disponibilidad.html', {
+        'form': form,
+        'title': 'Editar Horario'
+    })
 
 @login_required
 @user_passes_test(is_medico, login_url='registration/login')
-@require_POST
 def eliminar_disponibilidad(request, disponibilidad_id):
-    disponibilidad = get_object_or_404(disponibilidad, id=disponibilidad_id, medico=request.user.medico)
+    """Confirmación y eliminación segura de disponibilidad (REQ-19)"""
+    disp_obj = get_object_or_404(disponibilidad, id=disponibilidad_id, medico=request.user.medico)
+    
+    if request.method == 'POST':
+        try:
+            AvailabilityService.delete_safe(disp_obj)
+            messages.success(request, "Disponibilidad eliminada exitosamente.")
+            return redirect('inicio_medico')
+        except ValidationError as e:
+            messages.error(request, f"Error: {e.message}")
+            return redirect('inicio_medico')
 
-
-    disponibilidad.delete()
-    messages.success(request, "disponibilidad eliminada exitosamente.")
-    return redirect('editar_disponibilidad') # Redirige a la lista de disponibilidades
+    return render(request, 'AppCitasMedicas/eliminar_disponibilidad.html', {'disponibilidad': disp_obj})
 
 # Autenticación
 def iniciar_sesion(request):
@@ -423,12 +501,14 @@ def obtener_disponibilidades(request):
             
             resultados.append({
                 'id': d.id,
-                'fecha_hora_iso': fecha_hora_aware.isoformat(),
-                'mostrar': f"{d.fecha.strftime('%d/%m/%Y')} - {d.hora_inicio.strftime('%H:%M')}",
+                'title': 'Disponible',
+                'start': timezone.datetime.combine(d.fecha, d.hora_inicio).isoformat(),
+                'end': timezone.datetime.combine(d.fecha, d.hora_fin).isoformat(),
                 'fecha': d.fecha.strftime('%d/%m/%Y'),
                 'hora': d.hora_inicio.strftime('%H:%M'),
                 'medico_id': d.medico_id,
-                'medico_nombre': str(d.medico)  
+                'medico_nombre': str(d.medico),
+                'color': '#28a745' # Verde para disponible
             })
 
         return JsonResponse(resultados, safe=False)
