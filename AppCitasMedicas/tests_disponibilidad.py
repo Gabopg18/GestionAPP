@@ -17,7 +17,7 @@ class DisponibilidadOverlapTests(TestCase):
         self.cardiologo1 = Medico.objects.create(user=self.user_cardiologo, especialidad='Cardiología')
 
         # Horario base: Lunes 9:00 - 10:00 (Pediatra 1)
-        self.base_fecha = date(2026, 5, 11)
+        self.base_fecha = date(2030, 5, 11)
         self.dispo_base = disponibilidad.objects.create(
             medico=self.pediatra1,
             fecha=self.base_fecha,
