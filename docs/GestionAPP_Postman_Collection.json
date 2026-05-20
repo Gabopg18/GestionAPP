@@ -1,0 +1,75 @@
+{
+	"info": {
+		"name": "GestionAPP API REST - Sprint 2",
+		"description": "Colección de pruebas de integración para la API de GestionAPP (Django REST Framework)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Disponibilidades",
+			"item": [
+				{
+					"name": "Obtener Disponibilidades (GET)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/disponibilidades/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"disponibilidades",
+								""
+							]
+						},
+						"description": "Obtiene la lista de disponibilidades de médicos."
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Disponibilidad (POST)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"medico\": 1,\n    \"fecha\": \"2026-06-15\",\n    \"hora_inicio\": \"08:00:00\",\n    \"hora_fin\": \"12:00:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/disponibilidades/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"disponibilidades",
+								""
+							]
+						},
+						"description": "Crea una nueva disponibilidad validando que no haya traslapes."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000"
+		}
+	]
+}
