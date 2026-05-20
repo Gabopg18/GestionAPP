@@ -15,6 +15,10 @@ class CitaMedicaManager(models.Manager):
         return self.filter(paciente__cedula=cedula, fecha_hora_cita__date__gte=now().date()).order_by('fecha_hora_cita')
 
 class Paciente(models.Model):
+    """
+    Modelo que representa a un paciente del sistema clínico.
+    Almacena información personal y de contacto para agendamiento de citas.
+    """
     cedula = models.CharField(max_length=20, primary_key=True, verbose_name="Cédula")
     nombre = models.CharField(max_length=100, verbose_name="Nombre Completo")
     telefono = models.CharField(max_length=15, verbose_name="Teléfono")
@@ -30,6 +34,10 @@ class Paciente(models.Model):
         verbose_name_plural = "Pacientes"
 
 class Medico(models.Model):
+    """
+    Modelo que representa a un profesional de la salud.
+    Extiende del modelo User de Django para manejar autenticación y roles.
+    """
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, verbose_name="Usuario")
     especialidad = models.CharField(max_length=100, verbose_name="Especialidad")
 
@@ -41,6 +49,10 @@ class Medico(models.Model):
         verbose_name_plural = "Médicos"
 
 class disponibilidad(models.Model):
+    """
+    Representa un bloque de tiempo en el que un Médico está libre para atender citas.
+    Incluye lógica de validación para evitar solapamientos de horarios (Traslapes).
+    """
     medico = models.ForeignKey(Medico, on_delete=models.CASCADE, related_name="disponibilidad")
     fecha = models.DateField()
     hora_inicio = models.TimeField()
@@ -86,6 +98,10 @@ class disponibilidad(models.Model):
         ]
 
 class CitaMedica(models.Model):
+    """
+    Entidad central del sistema. Relaciona a un Paciente con un Médico en una 
+    fecha y hora específica. Gestiona los estados del flujo de atención.
+    """
     # GES-16: Estados definidos: Pendiente, Confirmada, Cancelada
     ESTADO_CHOICES = [
         ('Pendiente', 'Pendiente'),
@@ -122,6 +138,10 @@ class CitaMedica(models.Model):
         ]
 
 class Recordatorio(models.Model):
+    """
+    Gestiona el envío automatizado de notificaciones (Email/SMS) a los pacientes 
+    para reducir el ausentismo en las citas médicas.
+    """
     MEDIO_CHOICES = [
         ('Email', 'Correo Electrónico'),
         ('SMS', 'SMS'),
