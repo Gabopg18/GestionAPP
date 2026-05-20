@@ -1,8 +1,13 @@
 from django.http import HttpResponse
 from django.template.loader import get_template
-from xhtml2pdf import pisa
 from ..models import CitaMedica
 import logging
+
+try:
+    from xhtml2pdf import pisa
+    XHTML2PDF_AVAILABLE = True
+except ImportError:
+    XHTML2PDF_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +18,12 @@ class PDFService:
         Genera un comprobante de cita en formato PDF.
         Retorna la respuesta HTTP lista para ser enviada o un mensaje de error.
         """
+        if not XHTML2PDF_AVAILABLE:
+            return HttpResponse(
+                "La generación de PDF no está disponible en este servidor. "
+                "Por favor, descargue el comprobante desde el entorno local.",
+                status=503
+            )
         try:
             cita = CitaMedica.objects.select_related('paciente', 'medico__user').get(id_cita=cita_id)
         except CitaMedica.DoesNotExist:
