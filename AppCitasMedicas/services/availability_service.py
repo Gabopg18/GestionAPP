@@ -30,11 +30,13 @@ class AvailabilityService:
                 )
 
             # 3. Verificar que no existan citas agendadas que queden "huérfanas"
+            start_dt = datetime.combine(fecha, hora_inicio)
+            end_dt = datetime.combine(fecha, hora_fin)
+            
             citas_conflictivas = CitaMedica.objects.filter(
                 medico=medico,
-                fecha=fecha,
-                hora_inicio__lt=hora_fin,
-                hora_fin__gt=hora_inicio,
+                fecha_hora_cita__gte=start_dt,
+                fecha_hora_cita__lt=end_dt,
                 estado__in=['Pendiente', 'Confirmada']
             )
 
@@ -56,11 +58,13 @@ class AvailabilityService:
         """
         Elimina una disponibilidad solo si no tiene citas asociadas.
         """
+        start_dt = datetime.combine(disponibilidad_obj.fecha, disponibilidad_obj.hora_inicio)
+        end_dt = datetime.combine(disponibilidad_obj.fecha, disponibilidad_obj.hora_fin)
+        
         citas = CitaMedica.objects.filter(
             medico=disponibilidad_obj.medico,
-            fecha=disponibilidad_obj.fecha,
-            hora_inicio__gte=disponibilidad_obj.hora_inicio,
-            hora_fin__lte=disponibilidad_obj.hora_fin,
+            fecha_hora_cita__gte=start_dt,
+            fecha_hora_cita__lt=end_dt,
             estado__in=['Pendiente', 'Confirmada']
         )
 

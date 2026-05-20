@@ -21,8 +21,9 @@ class DisponibilidadViewSet(viewsets.ModelViewSet):
                 hora_fin=serializer.validated_data['hora_fin']
             )
             
-            headers = self.get_success_headers(serializer.data)
-            return Response(DisponibilidadSerializer(new_disp).data, status=status.HTTP_201_CREATED, headers=headers)
+            response_data = DisponibilidadSerializer(new_disp).data
+            headers = self.get_success_headers(response_data)
+            return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
