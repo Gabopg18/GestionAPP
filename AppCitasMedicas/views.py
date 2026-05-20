@@ -41,33 +41,13 @@ def dashboard_admin(request):
         'total_pacientes': Paciente.objects.count(),
     }
     return render(request, 'AppCitasMedicas/dashboard_admin.html', context)
-from django.http import HttpResponse
-from django.template.loader import get_template
-from xhtml2pdf import pisa
+from django.views.decorators.http import require_GET, require_POST
+from .services.pdf_service import PDFService
 
+@require_GET
 def generar_pdf_cita(request, cita_id):
     """Genera un comprobante de cita en formato PDF (REQ-17)"""
-    try:
-        cita = CitaMedica.objects.get(id_cita=cita_id)
-    except CitaMedica.DoesNotExist:
-        return HttpResponse("Cita no encontrada", status=404)
-
-    template_path = 'AppCitasMedicas/pdf_confirmacion.html'
-    context = {'cita': cita}
-    
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="confirmacion_cita_{cita.paciente.cedula}.pdf"'
-    
-    template = get_template(template_path)
-    html = template.render(context)
-
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    
-    if pisa_status.err:
-       return HttpResponse('Error al generar el PDF <pre>' + html + '</pre>')
-    
-    return response
-
+    return PDFService.generar_comprobante_cita(cita_id)
 
 # Vistas Públicas (Pacientes)
 def inicio_general(request):
@@ -246,8 +226,8 @@ def ver_agenda_medica (request):
     inicio_semana = hoy - timedelta(days=hoy.weekday())  # Lunes de esta semana
     fin_semana = inicio_semana + timedelta(days=6)       # Domingo de esta semana
     
-    # Obtener CITAS de esta semana
-    citas_semana = CitaMedica.objects.filter(
+    # Obtener CITAS de esta semana (Optimizado con select_related)
+    citas_semana = CitaMedica.objects.select_related('paciente').filter(
         medico=medico,
         fecha_hora_cita__date__range=[inicio_semana, fin_semana]
     ).order_by('fecha_hora_cita')
@@ -427,7 +407,7 @@ def mis_citas_medico(request):
     medico = request.user.medico
     
     # Obtener todas las citas del médico, ordenadas por fecha descendente
-    citas = CitaMedica.objects.filter(
+    citas = CitaMedica.objects.select_related('paciente').filter(
         medico=medico
     ).order_by('-fecha_hora_cita')
     
@@ -451,6 +431,7 @@ def confirmacion_disponibilidad(request):
     })
 
 
+@require_GET
 def obtener_disponibilidades(request):
     """
     API endpoint that returns available time slots for a doctor in JSON format.
@@ -525,6 +506,7 @@ class LoginMedicoView(LoginView):
     template_name = 'AppCitasMedicas/login.html'
     authentication_form = LoginMedicoForm
 
+@require_GET
 def obtener_medicos(request):
     """
     API endpoint para obtener médicos, con opción de filtrado por especialidad.

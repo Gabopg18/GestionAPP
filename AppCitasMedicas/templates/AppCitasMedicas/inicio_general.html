@@ -1,46 +1,68 @@
 {% extends "AppCitasMedicas/base.html" %}
 {% load static %}
 
-{% block title %}Inicio | Gestion De Citas{% endblock %}
+{% block title %}Inicio | Gestión De Citas Premium{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <div>
-        <h1 class="hero-title">Citas Para Todos</h1>
-        <p class="hero-subtitle">Agenda, administra y consulta tus citas médicas de forma sencilla.</p>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'buscar_citas' %}" class="btn btn-primario"><i class="bi bi-search"></i> Consultar mis
-                citas</a>
-            <a href="{% url 'agendar_cita' %}" class="btn btn-secundario"><i class="bi bi-calendar-plus"></i> Agendar
-                nueva cita</a>
-            <a href="{% url 'registration/login' %}" class="btn btn-confirmar"><i class="bi bi-person-lock"></i> Inicia
-                como
-                Médico</a>
+<section class="hero glass-panel my-5">
+    <div class="row align-items-center">
+        <!-- Texto y Botones -->
+        <div class="col-lg-6 hero-text-section text-center text-lg-start">
+            <h1 class="hero-title mb-4">La Salud al Alcance<br>de un <span class="text-gradient">Click</span></h1>
+            <p class="hero-subtitle mb-5">Agenda, administra y consulta tus citas médicas de forma inmediata. Un sistema diseñado para tu bienestar.</p>
+            
+            <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
+                <a href="{% url 'buscar_citas' %}" class="btn btn-primary btn-lg shadow-glow">
+                    <i class="bi bi-search me-2"></i> Mis Citas
+                </a>
+                <a href="{% url 'agendar_cita' %}" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-calendar-plus me-2"></i> Agendar Nueva
+                </a>
+                <a href="{% url 'registration/login' %}" class="btn btn-success btn-lg shadow-glow-success mt-3 mt-lg-0 w-100 w-lg-auto">
+                    <i class="bi bi-person-badge me-2"></i> Portal Médico
+                </a>
+            </div>
         </div>
-    </div>
-    <div>
-        <img src="{% static 'css/images/doctor.png' %}" alt="Doctor Ilustración" class="hero-image">
 
+        <!-- Imagen Flotante -->
+        <div class="col-lg-6 mt-5 mt-lg-0 text-center">
+            <div class="hero-image-wrapper">
+                <img src="{% static 'css/images/doctor.png' %}" alt="Doctor Ilustración" class="hero-image img-fluid">
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="main-container">
-    <div class="card">
-        <img src="{% static 'css/images/calendar-days-regular.svg' %}" alt="Cita" width="60">
-        <h3>Agenda Fácil</h3>
-        <p>Reserva tu cita en pocos pasos, sin complicaciones.</p>
+<!-- Features Section -->
+<section class="features-section row g-4 mt-2 mb-5">
+    <div class="col-md-4">
+        <div class="card glass-card h-100 text-center p-4">
+            <div class="feature-icon mb-3 mx-auto">
+                <img src="{% static 'css/images/calendar-days-regular.svg' %}" alt="Agenda" width="50" class="filter-white">
+            </div>
+            <h3 class="fw-bold text-white">Agenda Fácil</h3>
+            <p class="text-light-muted mb-0">Reserva tu cita en pocos pasos, sin complicaciones y a cualquier hora.</p>
+        </div>
     </div>
 
-    <div class="card">
-        <img src="{% static 'css/images/list-check-solid.svg' %}" alt="Gestión" width="60">
-        <h3>Gestiona tus Citas</h3>
-        <p>Consulta, reprograma o cancela cuando lo necesites.</p>
+    <div class="col-md-4">
+        <div class="card glass-card h-100 text-center p-4">
+            <div class="feature-icon mb-3 mx-auto">
+                <img src="{% static 'css/images/list-check-solid.svg' %}" alt="Gestión" width="50" class="filter-white">
+            </div>
+            <h3 class="fw-bold text-white">Gestión Total</h3>
+            <p class="text-light-muted mb-0">Consulta, reprograma o cancela tus compromisos cuando lo necesites.</p>
+        </div>
     </div>
 
-    <div class="card">
-        <img src="{% static 'css/images/bell-solid.svg' %}" alt="Recordatorios" width="60">
-        <h3>Recordatorios</h3>
-        <p>Recibe avisos automáticos para no olvidar tus citas.</p>
+    <div class="col-md-4">
+        <div class="card glass-card h-100 text-center p-4">
+            <div class="feature-icon mb-3 mx-auto">
+                <img src="{% static 'css/images/bell-solid.svg' %}" alt="Recordatorios" width="50" class="filter-white">
+            </div>
+            <h3 class="fw-bold text-white">Recordatorios</h3>
+            <p class="text-light-muted mb-0">Recibe avisos automáticos para no olvidar jamás tus citas médicas.</p>
+        </div>
     </div>
 </section>
 {% endblock %}
